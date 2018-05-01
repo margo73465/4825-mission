@@ -1,35 +1,27 @@
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
-const size = 30;
 const sides = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
 
 const svg = getFirstOfClass('canvas');
 setAttributes(svg, { width: windowWidth, height: windowHeight });
 
-const start1 = { x: 0, y: 50 };
-const length = 100;
-drawLoop(start1, length, size);
+// const start = { x: 0, y: 50 };
+// const length = 100;
+// drawLoop(start, length, 30);
 // const start2 = { x: windowWidth, y: 200 };
-// drawLoop(start2, length, size);
+// drawLoop(start2, length, 30);
 // const start3 = { x: 300, y: 0 };
-// drawLoop(start3, length, size);
+// drawLoop(start3, length, 30);
 // const start4 = { x: 100, y: windowHeight };
-// drawLoop(start4, 500, size);
-// drawRandomLoop();
-// drawRandomLoop();
-// drawRandomLoop();
-// drawRandomLoop();
-// drawRandomLoop();
-
-/*
-* fix little indent from lines out
-* figure out line speed...
-* animate backgrounds correctly
-*
-* grid???
-*/
+// drawLoop(start4, 500, 30);
+drawRandomLoop();
+drawRandomLoop();
+drawRandomLoop();
+drawRandomLoop();
+drawRandomLoop();
 
 function drawRandomLoop() {
+  const size = 30;
   const side = sides[Math.floor(Math.random()*4)];
 
   let start = {};
@@ -59,221 +51,122 @@ function drawRandomLoop() {
       console.log('oops');
       break;
   }
-  drawLoop(start, length, 30);
+  drawLoop(start, length, size);
 }
 
 function drawLoop(start, length, size) {
-  let end, loopEndPoint, exitPoint, side;
+  let end, loopEndPoint, exitPoint;
+  let loopSet = [];
   if ( start.x === 0 ) {
-    end = {};
-    loopEndPoint = {};
-    exitPoint = {};
+    // Starting from left wall
+    end = adjustPoint(start, { x: length });
+    loopEndPoint = adjustPoint(end, { x: -size, y: size });
+    centerArc = { start: end, end: loopEndPoint, size };
+    loopSet = getLeftArcSet(centerArc);
+    exitPoint = { x: loopEndPoint.x, y: 0 };
   } else if ( start.x === windowWidth ) {
-    pathSet = getLeftPathSet(start, length, size);
+    // Starting from right wall
+    end = adjustPoint(start, { x: -length });
+    loopEndPoint = adjustPoint(end, { x: size, y: -size });
+    centerArc = { start: end, end: loopEndPoint, size };
+    loopSet = getRightArcSet(centerArc);
+    exitPoint = { x: loopEndPoint.x, y: windowHeight };
   } else if ( start.y === 0 ) {
-    pathSet = getDownPathSet(start, length, size);
+    // Starting from top wall
+    end = adjustPoint(start, { y: length });
+    loopEndPoint = adjustPoint(end, { x: -size, y: -size });
+    centerArc = { start: end, end: loopEndPoint, size };
+    loopSet = getTopArcSet(centerArc);
+    exitPoint = { x: windowWidth, y: loopEndPoint.y };
   } else if ( start.y === windowHeight ) {
-    pathSet = getUpPathSet(start, length, size);
+    // Starting from bottom wall
+    end = adjustPoint(start, { y: -length });
+    loopEndPoint = adjustPoint(end, { x: size, y: size });
+    centerArc = { start: end, end: loopEndPoint, size };
+    loopSet = getBottomArcSet(centerArc);
+    exitPoint = { x: 0, y: loopEndPoint.y };
   } else {
     window.alert("can't start in the middle!");
   }
 
-	const { intro, loop, outro } = getPathSet({ start, end }, loopEndPoint, exitPoint);
-
-  const intro = getIntroPaths({ start, end});
-  const loop = getLoopPaths({ end, loopEndPoint });
-  const outro = getOutroPaths({ loopEndPoint, exitPoint });
-
-  const intro = getLineSet({ start, end });
-  const loop = getArcSet({ end, loopEndPoint }, side);
-  const outro = getLineSet({ loopEndPoint, exitPoint });
+  const intro = getLineSet({ start, end }, size).map(getLinePath);
+  const outro = getLineSet({ start: loopEndPoint, end: exitPoint }, size).map(getLinePath);
 
 	addLines(intro)
-		.then(() => addLines(loop))
+		.then(() => addLines(loopSet))
 		.then(() => addLines(outro));
 }
 
-function getLeftArcSet({ start, end }) {
+function getLeftArcSet({ start, end, size }) {
   const outerArc = {
-    start: adjustPoint(start, { y: -width }),
-    end: adjustPoint(end, { x: -width }),
-    size: width*2
+    start: adjustPoint(start, { y: -size }),
+    end: adjustPoint(end, { x: -size }),
+    size: size*2
   }
   const innerArc = {
-    start: adjustPoint(start, { y: width }),
-    end: adjustPoint(end, { x: width }),
+    start: adjustPoint(start, { y: size }),
+    end: adjustPoint(end, { x: size }),
     size: 2
   }
   return [
-    getArcPath({ start, end, size: width },
+    getArcPath({ start, end, size }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getBottomArcSet({ start, end }) {
+function getBottomArcSet({ start, end, size }) {
   const outerArc = {
-    start: adjustPoint(start, { x: -width }),
-    end: adjustPoint(end, { y: width }),
-    size: width*2
+    start: adjustPoint(start, { x: -size }),
+    end: adjustPoint(end, { y: size }),
+    size: size*2
   }
   const innerArc = {
-    start: adjustPoint(start, { x: width }),
-    end: adjustPoint(end, { y: -width }),
+    start: adjustPoint(start, { x: size }),
+    end: adjustPoint(end, { y: -size }),
     size: 2
   }
   return [
-    getArcPath({ start, end, size: width },
+    getArcPath({ start, end, size }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getRightArcSet({ start, end }) {
+function getRightArcSet({ start, end, size }) {
   const outerArc = {
-    start: adjustPoint(start, { y: width }),
-    end: adjustPoint(end, { x: width }),
-    size: width*2
+    start: adjustPoint(start, { y: size }),
+    end: adjustPoint(end, { x: size }),
+    size: size*2
   }
   const innerArc = {
-    start: adjustPoint(start, { y: -width }),
-    end: adjustPoint(end, { x: -width }),
+    start: adjustPoint(start, { y: -size }),
+    end: adjustPoint(end, { x: -size }),
     size: 2
   }
   return [
-    getArcPath({ start, end, size: width },
+    getArcPath({ start, end, size }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getTopArcSet({ start, end }) {
+function getTopArcSet({ start, end, size }) {
   const outerArc = {
-    start: adjustPoint(start, { x: width }),
-    end: adjustPoint(end, { y: -width }),
-    size: width*2
+    start: adjustPoint(start, { x: size }),
+    end: adjustPoint(end, { y: -size }),
+    size: size*2
   }
   const innerArc = {
-    start: adjustPoint(start, { x: -width }),
-    end: adjustPoint(end, { y: width }),
+    start: adjustPoint(start, { x: -size }),
+    end: adjustPoint(end, { y: size }),
     size: 2
   }
   return [
-    getArcPath({ start, end, size: width },
+    getArcPath({ start, end, size }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
-}
-
-function getArcSet({ start, end }, side) {
-  let innerArc, outerArc;
-  if ( side === "left" ){
-    innerArc = {
-      start: { x: , y: },
-      end: { x: , y: },
-      size: width
-    };
-    outerArc = {
-    }
-  } else if ( side === "bottom" ) {
-  } else if ( side === "
-}
-
-/*
-*  line = {
-*    start: { x: , y: },
-*    end: { x: , y: }
-*  }
-*
-*  arc = {
-*    start: { x: , y: },
-*    end: { x: , y: },
-*    size: ?
-*    curve_direction: ?
-*  }
-*/
-// update caller of get____PathSet to use start and end
-
-function getRightPathSet(line, loopEndPoint, exitPoint) {
-  // const loopPointX = length;
-  // const emergentPointY = start.y - width;
-  // loopStart = { x: start.x + length, y: start.y }
-  // loopEnd = { x: length - width, y: start.y + width}
-  // emergentLineStart = { x: length - width, y: start.y - width }
-
-	const edges = getParallelLines(line));
-  const intro = [line].concat(edges);
-
-  const arc = {
-    start: line.end,
-    end: loopEndPoint,
-    size: width
-  };
-	const innerArc = getInnerArc(arc);
-	const outerArc = getOuterArc(arc);
-  const loop = [arc, innerArc, outerArc];
-
-  const lineOut = {
-    start: loopEndPoint,
-    end: exitPoint
-  };
-	const edgesOut = getParallelLines(lineOut));
-  const outro = [lineOut].concat(edgesOut);
-
-	return { intro, loop, outro };
-}
-
-function getLeftPathSet(start, end) {
-  // const loopPointX = windowWidth - length;
-  // const emergentPointY = start.y + width;
-	let intro = [];
-	let loop = [];
-	let outro = [];
-	intro.push(getLinePath(start, end));
-	intro.push(getLinePath({ x: start.x, y: start.y - width}, { x: end.x, y: start.y - width }));
-	intro.push(getLinePath({ x: start.x, y: start.y + width}, { x: end.x, y: start.y + width }));
-
-	loop.push(getArcPath({ x: start.x + length, y: start.y }, width, { x: end.x - width, y: start.y + width }));
-	loop.push(getArcPath({ x: start.x + length, y: start.y - width }, width*2, { x: end.x - width*2, y: start.y + width }));
-	loop.push(getArcPath({ x: start.x + length, y: start.y + width }, 1, { x: end.x - 2, y: start.y + width }));
-
-	outro.push(getLinePath({ x: end.x - width, y: start.y - width - 1}, " V ", 0));
-	outro.push(getLinePath({ x: end.x - width*2, y: start.y - width - 1}, " V ", 0));
-	outro.push(getLinePath({ x: end.x, y: start.y - width - 1}, " V ", 0));
-
-  pathSet.push(getPath(start, " H ", windowWidth - length, width, { x: (windowWidth - length) + width, y: start.y - width }));
-  pathSet.push(getPath({ x: start.x, y: start.y + width }, " H ", windowWidth - length, width*2, { x: (windowWidth - length) + width*2, y: start.y - width }));
-  pathSet.push(getPath({ x: start.x, y: start.y - width }, " H ", windowWidth - length, 1, { x: (windowWidth - length) + 2, y: start.y - width }));
-  pathSet.push(getLinePath({ x: (windowWidth - length) + width, y: start.y + width }, " V ", windowHeight));
-  pathSet.push(getLinePath({ x: (windowWidth - length) + width*2, y: start.y + width }, " V ", windowHeight));
-  pathSet.push(getLinePath({ x: (windowWidth - length), y: start.y + width }, " V ", windowHeight));
-  return pathSet;
-}
-
-function getUpPathSet(start, length, width) {
-  // const loopPointY = windowHeight - length;
-  // const emergentPointX = start.x - width;
-  let pathSet = [];
-  pathSet.push(getPath(start, " V ", windowHeight - length, width, { x: start.x + width, y: (windowHeight - length) + width }));
-  pathSet.push(getPath({ x: start.x - width, y: start.y }, " V ", windowHeight - length, width*2, { x: start.x + width, y: (windowHeight - length) + width*2 }));
-  pathSet.push(getPath({ x: start.x + width, y: start.y }, " V ", windowHeight - length, 1, { x: start.x + width, y: (windowHeight - length) + 2 }));
-  pathSet.push(getLinePath({ x: start.x - width, y: (windowHeight - length) + width }, " H ", 0));
-  pathSet.push(getLinePath({ x: start.x - width, y: (windowHeight - length) + width*2 }, " H ", 0));
-  pathSet.push(getLinePath({ x: start.x - width, y: (windowHeight - length) }, " H ", 0));
-  return pathSet;
-}
-
-function getDownPathSet(start, length, width) {
-  // const loopPointY = length;
-  // const emergentPointX = start.x + width;
-  let pathSet = [];
-  pathSet.push(getPath(start, " V ", length, width, { x: start.x - width, y: length - width }));
-  pathSet.push(getPath({ x: start.x + width, y: start.y }, " V ", length, width*2, { x: start.x - width, y: length - width*2 }));
-  pathSet.push(getPath({ x: start.x - width, y: start.y }, " V ", length, 1, { x: start.x - width, y: length - 2 }));
-  pathSet.push(getLinePath({ x: start.x + width, y: length - width }, " H ", windowWidth));
-  pathSet.push(getLinePath({ x: start.x + width, y: length - width*2 }, " H ", windowWidth));
-  pathSet.push(getLinePath({ x: start.x + width, y: length }, " H ", windowWidth));
-  return pathSet;
 }
 
 function addLines(paths) {
@@ -302,57 +195,33 @@ function animatePath(path, time) {
 	return path;
 }
 
-
 /*
  * Utilities
  */
-function getInnerArc({ start, end, width }) {
-  return {
-    start: addPoints(end, { x: 0, y: -width }),
-    end: { x: end.x - 2, y: start.y + width },
-    size: 1
-  };
-}
-
-function getOuterArc({ start, end, width }) {
-  return {
-    start: addPoints(end, { x: 0, y: width }),
-    end: { x: end.x - width*2, y: start.y + width },
-    size: width*2
-  };
-}
-
-function getParallelLines({ start, end }) {
+function getLineSet({ start, end }, size) {
   let firstLine, secondLine;
   if ( start.x === end.x ) /* vertical */ {
     firstLine = {
-      start: adjustPoint(start, { y: -width });
-      end: adjustPoint(end, { y: -width });
+      start: adjustPoint(start, { x: -size }),
+      end: adjustPoint(end, { x: -size })
     };
     secondLine = {
-      start: adjustPoint(start, { y: width });
-      end: adjustPoint(end, { y: width });
+      start: adjustPoint(start, { x: size }),
+      end: adjustPoint(end, { x: size })
     }
   } else if ( start.y === end.y ) /* horizontal */ {
     firstLine = {
-      start: adjustPoint(start, { x: -width });
-      end: adjustPoint(end, { x: -width });
+      start: adjustPoint(start, { y: -size }),
+      end: adjustPoint(end, { y: -size })
     };
     secondLine = {
-      start: adjustPoint(start, { x: width });
-      end: adjustPoint(end, { x: width });
+      start: adjustPoint(start, { y: size }),
+      end: adjustPoint(end, { y: size })
     }
   } else {
     window.alert("this math is too hard! we  quit!");
   }
-  return [firstLine, secondLine];
-}
-
-function addPoints(first, second) {
-  return {
-    x: first.x + second.x,
-    y: first.y + second.y
-  };
+  return [{ start, end }, firstLine, secondLine];
 }
 
 function adjustPoint(point, adjustment) {
@@ -362,7 +231,7 @@ function adjustPoint(point, adjustment) {
 }
 
 function getLinePath({ start, end }) {
-  return "M " + start.x + " " + start.y + " L " + end.x + " " end.y;
+  return "M " + start.x + " " + start.y + " L " + end.x + " " + end.y;
 }
 
 function getArcPath({ start, end, size }) {
@@ -374,27 +243,10 @@ function createSVG(type, attributes) {
   return attributes ? setAttributes(el, attributes) : svgEl
 }
 
-function createDOM(type, attributes, text) {
-  const el = document.createElement(type);
-  if ( attributes ) {
-    setAttributes(el, attributes);
-  }
-  if ( text ) {
-    setText(el, text);
-  }
-  return el;
-}
-
 function setAttributes(el, attributes) {
   for ( attribute in attributes ) {
     el.setAttribute(attribute, attributes[attribute]);
   }
-  return el;
-}
-
-function setText(el, text) {
-  const textNode = document.createTextNode(text);
-  el.appendChild(textNode);
   return el;
 }
 
