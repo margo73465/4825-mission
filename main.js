@@ -169,8 +169,8 @@ function getDownPathSet(start, length, width) {
 /*
  * Utilities
  */
-function getPath(start, direction, length, arcSize, endPoint) {
-  return getLinePath(start, direction, length) + getArcPath(arcSize, endPoint);
+function getPath(start, direction, length, arcSize, end) {
+  return getLinePath(start, direction, length) + getArcPath(arcSize, end);
 }
 
 function getLinePath(start, direction, length) {
