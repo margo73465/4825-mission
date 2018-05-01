@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  background-color: black;
+}
+
+path {
+  stroke-width: 2px;
+  stroke: white;
+  fill: none;
+  animation-fill-mode: forwards;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.background {
+  stroke-width: 60px;
+  stroke: black;
+}
+
