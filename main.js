@@ -65,7 +65,8 @@ function drawRandomLoop() {
 function drawLoop(start, length, size) {
   let pathSet;
   if ( start.x === 0 ) {
-    pathSet = getRightPathSet(start, length, size);
+    pathSet = getRightPathSet(start, turn);
+    // pathSet = getRightPathSet(start, length, size);
   } else if ( start.x === windowWidth ) {
     pathSet = getLeftPathSet(start, length, size);
   } else if ( start.y === 0 ) {
@@ -108,28 +109,103 @@ function animatePath(path, time) {
 	return path;
 }
 
-function getRightPathSet(start, length, width) {
+/*
+*  line = {
+*    start: { x: , y: },
+*    end: { x: , y: }
+*  }
+*
+*  arc = {
+*    start: { x: , y: },
+*    end: { x: , y: },
+*    width: ?
+*    curve_direction: ?
+*  }
+*/
+function getRightPathSet(line) {
   // const loopPointX = length;
   // const emergentPointY = start.y - width;
+  // loopStart = { x: start.x + length, y: start.y }
+  // loopEnd = { x: length - width, y: start.y + width}
+  // emergentLineStart = { x: length - width, y: start.y - width }
 	let intro = [];
 	let loop = [];
 	let outro = [];
-	intro.push(getLinePath(start, " H ", length));
-	intro.push(getLinePath({ x: start.x, y: start.y - width}, " H ", length));
-	intro.push(getLinePath({ x: start.x, y: start.y + width}, " H ", length));
-	loop.push(getArcPath({ x: start.x + length, y: start.y }, width, { x: length - width, y: start.y + width }));
-	loop.push(getArcPath({ x: start.x + length, y: start.y - width }, width*2, { x: length - width*2, y: start.y + width }));
-	loop.push(getArcPath({ x: start.x + length, y: start.y + width }, 1, { x: length - 2, y: start.y + width }));
-	outro.push(getLinePath({ x: length - width, y: start.y - width - 1}, " V ", 0));
-	outro.push(getLinePath({ x: length - width*2, y: start.y - width - 1}, " V ", 0));
-	outro.push(getLinePath({ x: length, y: start.y - width - 1}, " V ", 0));
+
+	intro.push(getLinePath(line));
+	intro.push(getLinePath(getParallelLine(line, { x: 0, y: width })));
+	intro.push(getLinePath(getParallelLine(line, { x: 0, y: -width })));
+
+  const arc = {
+    start: line.end,
+    end: addPoints(end, { x: -width, y: width },
+    width
+  };
+	loop.push(getArcPath(arc));
+	loop.push(getArcPath(getInnerArc(arc)));
+	loop.push(getArcPath(getOuterArc(arc)));
+
+  const outLine = {
+    start: arcCenter.end,
+    end: Object.assign(arcCenter.end, { y: 0 });
+  };
+	outro.push(getLinePath(middleOut));
+	outro.push(getLinePath(getParallelLine(middleOut, { x: -width, y: 0 })));
+	outro.push(getLinePath(getParallelLine(middleOut, { x: width, y: 0 })));
 	return { intro, loop, outro };
 }
 
-function getLeftPathSet(start, length, width) {
+// change getLinePath to accept { start, end } object
+// update caller of get____PathSet to use start and end
+
+function getInnerArc({ start, end, width }) {
+  return {
+    start: addPoints(line.end, { x: 0, y: -width }),
+    end: { x: end.x - 2, y: start.y + width },
+    width: 1
+  };
+}
+
+function getOuterArc({ start, end, width }) {
+  return {
+    start: addPoints(end, { x: 0, y: width }),
+    end: { x: end.x - width*2, y: start.y + width },
+    width: width*2
+  };
+}
+
+function getParallelLine({ start, end }, offset) {
+  const parallelStart = addPoints(start, offset);
+  const parallelEnd = addPoints(end, offset);
+  return {
+    start: parallelStart,
+    end: parallelEnd
+  };
+}
+
+function getParallelArc({ start, end }) {
+}
+
+function addPoints(first, second) {
+  return { x: first.x + second.x, y: first.y + second.y };
+}
+
+function getLeftPathSet(start, end) {
   // const loopPointX = windowWidth - length;
   // const emergentPointY = start.y + width;
-  let pathSet = [];
+	let intro = [];
+	let loop = [];
+	let outro = [];
+	intro.push(getLinePath(start, end));
+	intro.push(getLinePath({ x: start.x, y: start.y - width}, { x: end.x, y: start.y - width }));
+	intro.push(getLinePath({ x: start.x, y: start.y + width}, { x: end.x, y: start.y + width }));
+	loop.push(getArcPath({ x: start.x + length, y: start.y }, width, { x: end.x - width, y: start.y + width }));
+	loop.push(getArcPath({ x: start.x + length, y: start.y - width }, width*2, { x: end.x - width*2, y: start.y + width }));
+	loop.push(getArcPath({ x: start.x + length, y: start.y + width }, 1, { x: end.x - 2, y: start.y + width }));
+	outro.push(getLinePath({ x: end.x - width, y: start.y - width - 1}, " V ", 0));
+	outro.push(getLinePath({ x: end.x - width*2, y: start.y - width - 1}, " V ", 0));
+	outro.push(getLinePath({ x: end.x, y: start.y - width - 1}, " V ", 0));
+
   pathSet.push(getPath(start, " H ", windowWidth - length, width, { x: (windowWidth - length) + width, y: start.y - width }));
   pathSet.push(getPath({ x: start.x, y: start.y + width }, " H ", windowWidth - length, width*2, { x: (windowWidth - length) + width*2, y: start.y - width }));
   pathSet.push(getPath({ x: start.x, y: start.y - width }, " H ", windowWidth - length, 1, { x: (windowWidth - length) + 2, y: start.y - width }));
@@ -175,6 +251,10 @@ function getPath(start, direction, length, arcSize, end) {
 
 function getLinePath(start, direction, length) {
   return "M " + start.x + " " + start.y + direction + length;
+}
+
+function getLinePath(start, end) {
+  return "M " + start.x + " " + start.y + " L " + end.x + " " end.y;
 }
 
 function getArcPath(start, size, end) {
