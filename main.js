@@ -1,27 +1,31 @@
-const windowWidth = window.innerWidth;
-const windowHeight = window.innerHeight;
+// const windowWidth = window.innerWidth;
+// const windowHeight = window.innerHeight;
+const windowWidth = 1600;
+const windowHeight = 1000;
 const sides = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
 
 const svg = getFirstOfClass('canvas');
-setAttributes(svg, { width: windowWidth, height: windowHeight });
+// setAttributes(svg, { width: windowWidth, height: windowHeight });
 
-// const start = { x: 0, y: 50 };
-// const length = 100;
-// drawLoop(start, length, 30);
-// const start2 = { x: windowWidth, y: 200 };
-// drawLoop(start2, length, 30);
-// const start3 = { x: 300, y: 0 };
-// drawLoop(start3, length, 30);
-// const start4 = { x: 100, y: windowHeight };
-// drawLoop(start4, 500, 30);
-drawRandomLoop();
-drawRandomLoop();
-drawRandomLoop();
-drawRandomLoop();
-drawRandomLoop();
+const start = { x: 0, y: 50 };
+const length = 100;
+drawLoop(start, length, 30);
+const start2 = { x: windowWidth, y: 200 };
+drawLoop(start2, length, 30);
+const start3 = { x: 300, y: 0 };
+drawLoop(start3, length, 30);
+const start4 = { x: 100, y: windowHeight };
+drawLoop(start4, 500, 30);
+// drawRandomLoop();
+// drawRandomLoop();
+// drawRandomLoop();
+// drawRandomLoop();
+// drawRandomLoop();
 
 function drawRandomLoop() {
-  const size = 30;
+  const size = 50;
+  const gridWidth = Math.floor(windowWidth / size);
+  const gridHeight = Math.floor(windowHeight / size);
   const side = sides[Math.floor(Math.random()*4)];
 
   let start = {};
@@ -29,23 +33,23 @@ function drawRandomLoop() {
   switch(side) {
     case 'TOP':
       start.y = 0;
-      start.x = Math.floor(Math.random()*windowWidth);
-      length = Math.floor(Math.random()*windowHeight);
+      start.x = Math.floor(Math.random() * gridWidth) * size;
+      length = Math.floor(Math.random() * gridHeight) * size;
       break;
     case 'BOTTOM':
       start.y = windowHeight;
-      start.x = Math.floor(Math.random()*windowWidth);
-      length = Math.floor(Math.random()*windowHeight);
+      start.x = Math.floor(Math.random() * gridWidth) * size;
+      length = Math.floor(Math.random() * gridHeight) * size;
       break;
     case 'RIGHT':
-      start.y = Math.floor(Math.random()*windowWidth);
+      start.y = Math.floor(Math.random() * gridWidth) * size;
       start.x = windowWidth;
-      length = Math.floor(Math.random()*windowHeight);
+      length = Math.floor(Math.random() * gridHeight) * size;
       break;
     case 'LEFT':
-      start.y = Math.floor(Math.random()*windowHeight);
+      start.y = Math.floor(Math.random() * gridWidth) * size;
       start.x = 0;
-      length = Math.floor(Math.random()*windowHeight);
+      length = Math.floor(Math.random() * gridHeight) * size;
       break;
     default:
       console.log('oops');
@@ -92,9 +96,9 @@ function drawLoop(start, length, size) {
   const intro = getLineSet({ start, end }, size).map(getLinePath);
   const outro = getLineSet({ start: loopEndPoint, end: exitPoint }, size).map(getLinePath);
 
-	addLines(intro)
-		.then(() => addLines(loopSet))
-		.then(() => addLines(outro));
+	addLines(intro, size)
+		.then(() => addLines(loopSet, size))
+		.then(() => addLines(outro, size));
 }
 
 function getLeftArcSet({ start, end, size }) {
@@ -169,13 +173,16 @@ function getTopArcSet({ start, end, size }) {
   ]
 }
 
-function addLines(paths) {
+function addLines(paths, size) {
   return new Promise((resolve, reject) => {
     let time;
     paths.map((path, i) => {
       const pathEl = createSVG('path', { d: path });
       if ( i === 0 ) {
-        const backgroundEl = createSVG('path', { d: path, class: 'background' });
+        const backgroundEl = createSVG('path',
+          { d: path,
+            class: 'background',
+            style: 'stroke-width: ' + size*2 + 'px' });
         const length = backgroundEl.getTotalLength();
         time = length/100;
         animatePath(backgroundEl, time);
