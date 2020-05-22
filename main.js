@@ -1,5 +1,6 @@
-const windowWidth = window.innerWidth;
-const windowHeight = window.innerHeight;
+const SIZE = 50;
+const windowWidth = Math.ceil(window.innerWidth / SIZE) * SIZE;
+const windowHeight = Math.ceil(window.innerHeight / SIZE) * SIZE;
 const sides = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
 
 const svg = document.getElementById('svg');
@@ -8,9 +9,8 @@ const svg = document.getElementById('svg');
 drawRandomLoop();
 
 function drawRandomLoop() {
-  const size = 50;
-  const gridWidth = Math.floor(windowWidth / size);
-  const gridHeight = Math.floor(windowHeight / size);
+  const gridWidth = Math.floor(windowWidth / SIZE);
+  const gridHeight = Math.floor(windowHeight / SIZE);
   const side = sides[Math.floor(Math.random()*4)];
 
   let start = {};
@@ -18,147 +18,147 @@ function drawRandomLoop() {
   switch(side) {
     case 'TOP':
       start.y = 0;
-      start.x = Math.floor(Math.random() * gridWidth) * size;
-      length = Math.floor(Math.random() * gridHeight) * size;
+      start.x = Math.floor(Math.random() * gridWidth) * SIZE;
+      length = Math.floor(Math.random() * gridHeight) * SIZE;
       break;
     case 'BOTTOM':
       start.y = windowHeight;
-      start.x = Math.floor(Math.random() * gridWidth) * size;
-      length = Math.floor(Math.random() * gridHeight) * size;
+      start.x = Math.floor(Math.random() * gridWidth) * SIZE;
+      length = Math.floor(Math.random() * gridHeight) * SIZE;
       break;
     case 'RIGHT':
-      start.y = Math.floor(Math.random() * gridWidth) * size;
+      start.y = Math.floor(Math.random() * gridWidth) * SIZE;
       start.x = windowWidth;
-      length = Math.floor(Math.random() * gridHeight) * size;
+      length = Math.floor(Math.random() * gridHeight) * SIZE;
       break;
     case 'LEFT':
-      start.y = Math.floor(Math.random() * gridWidth) * size;
+      start.y = Math.floor(Math.random() * gridWidth) * SIZE;
       start.x = 0;
-      length = Math.floor(Math.random() * gridHeight) * size;
+      length = Math.floor(Math.random() * gridHeight) * SIZE;
       break;
     default:
       console.log('oops');
       break;
   }
-  drawLoop(start, length, size).then(drawRandomLoop);
+  drawLoop(start, length, SIZE).then(drawRandomLoop);
 }
 
-function drawLoop(start, length, size) {
+function drawLoop(start, length, SIZE) {
   let end, loopEndPoint, exitPoint;
   let loopSet = [];
   if ( start.x === 0 ) {
     // Starting from left wall
     end = adjustPoint(start, { x: length });
-    loopEndPoint = adjustPoint(end, { x: -size, y: size });
-    centerArc = { start: end, end: loopEndPoint, size };
+    loopEndPoint = adjustPoint(end, { x: -SIZE, y: SIZE });
+    centerArc = { start: end, end: loopEndPoint, SIZE };
     loopSet = getLeftArcSet(centerArc);
     exitPoint = { x: loopEndPoint.x, y: 0 };
   } else if ( start.x === windowWidth ) {
     // Starting from right wall
     end = adjustPoint(start, { x: -length });
-    loopEndPoint = adjustPoint(end, { x: size, y: -size });
-    centerArc = { start: end, end: loopEndPoint, size };
+    loopEndPoint = adjustPoint(end, { x: SIZE, y: -SIZE });
+    centerArc = { start: end, end: loopEndPoint, SIZE };
     loopSet = getRightArcSet(centerArc);
     exitPoint = { x: loopEndPoint.x, y: windowHeight };
   } else if ( start.y === 0 ) {
     // Starting from top wall
     end = adjustPoint(start, { y: length });
-    loopEndPoint = adjustPoint(end, { x: -size, y: -size });
-    centerArc = { start: end, end: loopEndPoint, size };
+    loopEndPoint = adjustPoint(end, { x: -SIZE, y: -SIZE });
+    centerArc = { start: end, end: loopEndPoint, SIZE };
     loopSet = getTopArcSet(centerArc);
     exitPoint = { x: windowWidth, y: loopEndPoint.y };
   } else if ( start.y === windowHeight ) {
     // Starting from bottom wall
     end = adjustPoint(start, { y: -length });
-    loopEndPoint = adjustPoint(end, { x: size, y: size });
-    centerArc = { start: end, end: loopEndPoint, size };
+    loopEndPoint = adjustPoint(end, { x: SIZE, y: SIZE });
+    centerArc = { start: end, end: loopEndPoint, SIZE };
     loopSet = getBottomArcSet(centerArc);
     exitPoint = { x: 0, y: loopEndPoint.y };
   } else {
     window.alert("can't start in the middle!");
   }
 
-  const intro = getLineSet({ start, end }, size).map(getLinePath);
-  const outro = getLineSet({ start: loopEndPoint, end: exitPoint }, size).map(getLinePath);
+  const intro = getLineSet({ start, end }, SIZE).map(getLinePath);
+  const outro = getLineSet({ start: loopEndPoint, end: exitPoint }, SIZE).map(getLinePath);
 
-	return addLines(intro, size)
-		.then(() => addLines(loopSet, size))
-		.then(() => addLines(outro, size))
+	return addLines(intro, SIZE)
+		.then(() => addLines(loopSet, SIZE))
+		.then(() => addLines(outro, SIZE))
 }
 
-function getLeftArcSet({ start, end, size }) {
+function getLeftArcSet({ start, end, SIZE }) {
   const outerArc = {
-    start: adjustPoint(start, { y: -size }),
-    end: adjustPoint(end, { x: -size }),
-    size: size*2
+    start: adjustPoint(start, { y: -SIZE }),
+    end: adjustPoint(end, { x: -SIZE }),
+    SIZE: SIZE*2
   }
   const innerArc = {
-    start: adjustPoint(start, { y: size }),
-    end: adjustPoint(end, { x: size }),
-    size: 2
+    start: adjustPoint(start, { y: SIZE }),
+    end: adjustPoint(end, { x: SIZE }),
+    SIZE: 2
   }
   return [
-    getArcPath({ start, end, size }),
+    getArcPath({ start, end, SIZE }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getBottomArcSet({ start, end, size }) {
+function getBottomArcSet({ start, end, SIZE }) {
   const outerArc = {
-    start: adjustPoint(start, { x: -size }),
-    end: adjustPoint(end, { y: size }),
-    size: size*2
+    start: adjustPoint(start, { x: -SIZE }),
+    end: adjustPoint(end, { y: SIZE }),
+    SIZE: SIZE*2
   }
   const innerArc = {
-    start: adjustPoint(start, { x: size }),
-    end: adjustPoint(end, { y: -size }),
-    size: 2
+    start: adjustPoint(start, { x: SIZE }),
+    end: adjustPoint(end, { y: -SIZE }),
+    SIZE: 2
   }
   return [
-    getArcPath({ start, end, size }),
+    getArcPath({ start, end, SIZE }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getRightArcSet({ start, end, size }) {
+function getRightArcSet({ start, end, SIZE }) {
   const outerArc = {
-    start: adjustPoint(start, { y: size }),
-    end: adjustPoint(end, { x: size }),
-    size: size*2
+    start: adjustPoint(start, { y: SIZE }),
+    end: adjustPoint(end, { x: SIZE }),
+    SIZE: SIZE*2
   }
   const innerArc = {
-    start: adjustPoint(start, { y: -size }),
-    end: adjustPoint(end, { x: -size }),
-    size: 2
+    start: adjustPoint(start, { y: -SIZE }),
+    end: adjustPoint(end, { x: -SIZE }),
+    SIZE: 2
   }
   return [
-    getArcPath({ start, end, size }),
+    getArcPath({ start, end, SIZE }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function getTopArcSet({ start, end, size }) {
+function getTopArcSet({ start, end, SIZE }) {
   const outerArc = {
-    start: adjustPoint(start, { x: size }),
-    end: adjustPoint(end, { y: -size }),
-    size: size*2
+    start: adjustPoint(start, { x: SIZE }),
+    end: adjustPoint(end, { y: -SIZE }),
+    SIZE: SIZE*2
   }
   const innerArc = {
-    start: adjustPoint(start, { x: -size }),
-    end: adjustPoint(end, { y: size }),
-    size: 2
+    start: adjustPoint(start, { x: -SIZE }),
+    end: adjustPoint(end, { y: SIZE }),
+    SIZE: 2
   }
   return [
-    getArcPath({ start, end, size }),
+    getArcPath({ start, end, SIZE }),
     getArcPath(innerArc),
     getArcPath(outerArc)
   ]
 }
 
-function addLines(paths, size) {
+function addLines(paths, SIZE) {
   return new Promise((resolve, reject) => {
     let time;
     paths.map((path, i) => {
@@ -167,7 +167,7 @@ function addLines(paths, size) {
         const backgroundEl = createSVG('path',
           { d: path,
             class: 'background',
-            style: 'stroke-width: ' + size*2 + 'px' });
+            style: 'stroke-width: ' + SIZE*2 + 'px' });
         const length = backgroundEl.getTotalLength();
         time = length/100;
         animatePath(backgroundEl, time);
@@ -190,25 +190,25 @@ function animatePath(path, time) {
 /*
  * Utilities
  */
-function getLineSet({ start, end }, size) {
+function getLineSet({ start, end }, SIZE) {
   let firstLine, secondLine;
   if ( start.x === end.x ) /* vertical */ {
     firstLine = {
-      start: adjustPoint(start, { x: -size }),
-      end: adjustPoint(end, { x: -size })
+      start: adjustPoint(start, { x: -SIZE }),
+      end: adjustPoint(end, { x: -SIZE })
     };
     secondLine = {
-      start: adjustPoint(start, { x: size }),
-      end: adjustPoint(end, { x: size })
+      start: adjustPoint(start, { x: SIZE }),
+      end: adjustPoint(end, { x: SIZE })
     }
   } else if ( start.y === end.y ) /* horizontal */ {
     firstLine = {
-      start: adjustPoint(start, { y: -size }),
-      end: adjustPoint(end, { y: -size })
+      start: adjustPoint(start, { y: -SIZE }),
+      end: adjustPoint(end, { y: -SIZE })
     };
     secondLine = {
-      start: adjustPoint(start, { y: size }),
-      end: adjustPoint(end, { y: size })
+      start: adjustPoint(start, { y: SIZE }),
+      end: adjustPoint(end, { y: SIZE })
     }
   } else {
     window.alert("this math is too hard! we  quit!");
@@ -226,8 +226,8 @@ function getLinePath({ start, end }) {
   return "M " + start.x + " " + start.y + " L " + end.x + " " + end.y;
 }
 
-function getArcPath({ start, end, size }) {
-  return "M " + start.x + " " + start.y + " A " + size + " " + size + " 0 1 1 " + end.x + " " + end.y;
+function getArcPath({ start, end, SIZE }) {
+  return "M " + start.x + " " + start.y + " A " + SIZE + " " + SIZE + " 0 1 1 " + end.x + " " + end.y;
 }
 
 function createSVG(type, attributes) {
