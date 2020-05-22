@@ -2,22 +2,9 @@ const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 const sides = ['TOP', 'BOTTOM', 'LEFT', 'RIGHT'];
 
-const svg = getFirstOfClass('canvas');
+const svg = document.getElementById('svg');
 // setAttributes(svg, { width: windowWidth, height: windowHeight });
 
-// const start = { x: 0, y: 50 };
-// const length = 100;
-// drawLoop(start, length, 30);
-// const start2 = { x: windowWidth, y: 200 };
-// drawLoop(start2, length, 30);
-// const start3 = { x: 300, y: 0 };
-// drawLoop(start3, length, 30);
-// const start4 = { x: 100, y: windowHeight };
-// drawLoop(start4, 500, 30);
-drawRandomLoop();
-drawRandomLoop();
-drawRandomLoop();
-drawRandomLoop();
 drawRandomLoop();
 
 function drawRandomLoop() {
@@ -53,7 +40,7 @@ function drawRandomLoop() {
       console.log('oops');
       break;
   }
-  drawLoop(start, length, size);
+  drawLoop(start, length, size).then(drawRandomLoop);
 }
 
 function drawLoop(start, length, size) {
@@ -94,10 +81,9 @@ function drawLoop(start, length, size) {
   const intro = getLineSet({ start, end }, size).map(getLinePath);
   const outro = getLineSet({ start: loopEndPoint, end: exitPoint }, size).map(getLinePath);
 
-	addLines(intro, size)
+	return addLines(intro, size)
 		.then(() => addLines(loopSet, size))
 		.then(() => addLines(outro, size))
-    .catch(error => window.alert("o no... something went wrong!"));
 }
 
 function getLeftArcSet({ start, end, size }) {
